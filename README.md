@@ -1,1 +1,8 @@
 # Revenge
+
+
+
+
+
+
+NIggers are blaxk
