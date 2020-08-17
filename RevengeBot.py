@@ -842,36 +842,6 @@ async def announce_error(ctx, error):
 
 
 
-
-@client.command()
-async def bfknife(ctx):
-    joke = ['https://66.media.tumblr.com/cfbe5ca0709a9b6e47b7d77ecb09f048/tumblr_pijiwaplZs1s27lff_500.gif',
-             'https://thumbs.gfycat.com/WelldocumentedRingedBlueandgoldmackaw-size_restricted.gif',
-             'https://i.makeagif.com/media/4-26-2016/nELiuW.gif',
-             'https://thumbs.gfycat.com/LimitedPopularGannet-size_restricted.gif']
-    embed = discord.Embed(color=0x000000, title=f'ButterFly Knife :heart_eyes:', timestamp=ctx.message.created_at)
-    embed.set_image(url=f'{random.choice(joke)}')
-    embed.set_footer(text=f"Requested by {ctx.author.display_name}", icon_url=ctx.author.avatar_url)
-
-    await ctx.send(embed=embed)
-
-
-@client.command()
-async def stab(ctx, member: discord.Member):
-    kiss = ['https://media1.tenor.com/images/2809308dae94fe93a7bd3bc76237dc18/tenor.gif?itemid=5548924',
-             'https://media.tenor.com/images/2f7dd7b55fad91bab70a9a0b7d34b848/tenor.gif',
-             'https://i.gifer.com/ANu0.gif',
-             'https://thumbs.gfycat.com/EvilSlimyAldabratortoise-small.gif',
-             'https://i.gifer.com/7bHW.gif']
-    embed = discord.Embed(color=0x000000)
-    embed.set_author(name=f"{ctx.author.display_name} just stabbed {member.display_name}. Yikes.")
-    embed.set_image(url=f'{random.choice(kiss)}')
-    embed.set_footer(text=f"Requested by {ctx.author.display_name}", icon_url=ctx.author.avatar_url)
-
-    await ctx.send(embed=embed)
-
-
-
 ###########################MUSIC#############################
 
 @client.command(pass_context=True, aliases=['j'])
