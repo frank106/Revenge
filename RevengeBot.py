@@ -1426,4 +1426,4 @@ async def on_command_error(ctx, error):
 
 
 
-client.run('NzA0NDUyNDY3OTk1MzEyMTM5.XqnP6A.xu8gMRn8lOLDNiyYvbC6Fm8ngYc')
+client.run(Token)
