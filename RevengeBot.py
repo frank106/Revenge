@@ -20,6 +20,7 @@ from discord import TextChannel
 
 
 
+
 def get_prefix(client, message):
     with open('prefixes.json', 'r') as f:
         prefixes = json.load(f)
@@ -35,7 +36,7 @@ client.launch_time = datetime.utcnow()
 
 @client.event
 async def on_ready():
-    await client.change_presence(status=discord.Status.do_not_disturb , activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(client.users)} Users | -help"))
+    await client.change_presence(status=discord.Status.idle , activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(client.users)} Users | -help"))
     print('Lets Do This Pussi!.')
 
 
@@ -192,7 +193,31 @@ async def on_message_delete(message):
 
     await channel.send(embed=embed)
     await client.process_commands(message)
+@client.event
+async def on_message(message):
 
+
+    if message.type == discord.MessageType.premium_guild_subscription:
+
+
+        guild = message.guild
+
+        names = ['boost']
+
+
+        channel = discord.utils.find(lambda channel:any(map(lambda c: c in channel.name, names)), guild.text_channels)
+
+        e = discord.Embed(color=0x000000)
+
+        fields = ["<a:boost:742571102349295658> *New Booster {!}*", f'{message.author.mention}']
+
+
+
+        for name, value in fields:
+            e.add_field(name=name,value=value)
+
+        await channel.send(embed=e)
+    await client.process_commands(message)
 
 #############################EVENTS######################
 
@@ -378,6 +403,7 @@ async def mute(ctx, member: discord.Member, *, reason=None):
 
 
 
+
 @mute.error
 async def mute_error(ctx, error):
     if isinstance(error, commands.MissingRequiredArgument):
@@ -530,6 +556,8 @@ async def mod(ctx):
 
 
 
+
+
 #############################HELP######################################################
 
 
@@ -567,17 +595,20 @@ async def userinfo(ctx, member: discord.Member = None):
     member = ctx.author if not member else member
 
 
-    roles = [role for role in member.roles]
+    roles = [role for role in member.roles if role != ctx.guild.default_role]
+
+
 
     embed.add_field(name=f"**User**", value=f"{member}", inline=False)
     embed.add_field(name=f"**User ID**", value=member.id, inline=False)
     embed.add_field(name=f"**Account Created On**", value=member.created_at.strftime("%a, %B %#d %Y "), inline=False)
     embed.add_field(name=f"**Joined Server On**", value=member.joined_at.strftime("%a, %B %#d %Y "), inline=False)
     embed.add_field(name=f"**Roles**", value=" ".join([role.mention for role in roles]), inline=False)
-    embed.add_field(name=f"**Status**", value=member.status, inline=False)
+    embed.add_field(name=f"**Status**", value=f"{str(member.status).title()}", inline=False)
     embed.add_field(name=f"**Playing**", value=member.activity, inline=False)
     embed.set_thumbnail(url=member.avatar_url)
     await ctx.send(embed=embed)
+
 
 
 
@@ -594,7 +625,6 @@ async def userinfo_error(ctx, error):
 
 @client.command()
 async def serverinfo(ctx):
-
 
 
 
@@ -802,7 +832,6 @@ async def n4k(ctx):
 @client.command()
 async def botinfo(ctx):
 
-
 	embed = discord.Embed(color=0x000000, timestamp=ctx.message.created_at, title="__**Revenge Info**__")
 	embed.set_thumbnail(url="https://cdn.discordapp.com/avatars/704452467995312139/22002c22ce1f34977aa6091629fc2f3e.webp?size=1024")
 	embed.add_field(name="**Created**", value="**4/27/2020**")
@@ -811,9 +840,9 @@ async def botinfo(ctx):
 	embed.add_field(name="**Language**", value="Python", inline=True)
 	embed.add_field(name="**Users**", value=f"{len(client.users)}")
 	embed.add_field(name="**Servers**", value=f"{len(client.guilds)}")
+
 	embed.add_field(name="__**Instagram**__", value="[Click Here](https://www.instagram.com/zrevxnge/)")
 	embed.add_field(name="__**Twitter**__", value="[Click Here](https://twitter.com/zrevxnge)", inline=True)
-
 
 	await ctx.send(embed=embed)
 
@@ -827,7 +856,6 @@ async def announce(ctx, channel: TextChannel, *, message):
     embed = discord.Embed(color=0x000000, title='Announcement', description=f'{message}', timestamp=ctx.message.created_at)
 
     await channel.send(embed=embed)
-    await ctx.message.delete()
 
 @announce.error
 async def announce_error(ctx, error):
@@ -839,6 +867,9 @@ async def announce_error(ctx, error):
     	await ctx.send(embed=embed)
     else:
     	raise(error)
+    
+
+
 
 
 
@@ -1025,16 +1056,21 @@ async def randomnumber(ctx):
 
 
 @client.command()
-@commands.cooldown(1, 1800, commands.BucketType.user)
+@commands.cooldown(1, 500, commands.BucketType.user)
 @commands.has_permissions(manage_messages=True)
 async def dm(ctx,  member: discord.Member, *, message):
-    await ctx.message.delete()
-    await member.send(message)
-    embed = discord.Embed(color=0x000000, title=f"Success", description=f"Direct Message Sent!", timestamp=ctx.message.created_at)
-    embed.add_field(name=f"**Sent By**", value=f"{ctx.author.mention}", inline=True)
-    embed.add_field(name=f"**Message**", value=f"{message}", inline=True)
-    embed.set_thumbnail(url=member.avatar_url)
-    await ctx.send(embed=embed)
+    try:
+        await ctx.message.delete()
+
+        await member.send(message)
+        embed = discord.Embed(color=0x000000, title=f"Success", description=f"Direct Message Sent!", timestamp=ctx.message.created_at)
+        embed.add_field(name=f"**Sent By**", value=f"{ctx.author.mention}", inline=True)
+        embed.add_field(name=f"**Message**", value=f"{message}", inline=True)
+        embed.set_thumbnail(url=member.avatar_url)
+        await ctx.send(embed=embed)
+    except(discord.Forbidden):
+        await ctx.send(f"DM not sent, due to members settings.")
+        return
 
 
 
@@ -1050,7 +1086,8 @@ async def dm_error(ctx, error):
     	embed = discord.Embed(color=0x000000, title=f"**Missing Arguments!**", description=f"Usage: ``{ctx.prefix}dm <user> <message>``")
     	await ctx.send(embed=embed)
     else:
-    	rasie(error)
+        raise (error)
+
     	
 
 
@@ -1073,18 +1110,25 @@ async def dmowner(ctx, *, content):
 @commands.has_permissions(manage_messages=True)
 async def warn(ctx, member: discord.Member, *, content):
     await ctx.message.delete()
-    embed = discord.Embed(color=0x000000, title=f"Woah, Chill. You've Just Got Warned.", timestamp=ctx.message.created_at)
-    embed.add_field(name=f"**Reason**", value=f"{content}", inline=False)
-    embed.add_field(name=f"**Warned By**", value=f"{ctx.author.display_name}", inline=False)
-    embed.add_field(name=f"**Server**", value=f"{ctx.guild.name}", inline=False)
-    await member.send(embed=embed)
 
-    embed = discord.Embed(color=0x000000, title=f"Success", description=f"{member.mention} Has Been Warned!", timestamp=ctx.message.created_at)
-    embed.add_field(name=f"**Warned By**", value=f"{ctx.author.mention}", inline=True)
-    embed.add_field(name=f"**Reason**", value=f"``{content}``", inline=True)
-    embed.set_thumbnail(url=member.avatar_url)
+    try:
+        embed = discord.Embed(color=0x000000, title=f"Woah, Chill. You've Just Got Warned.", timestamp=ctx.message.created_at)
+        embed.add_field(name=f"**Reason**", value=f"{content}", inline=False)
+        embed.add_field(name=f"**Warned By**", value=f"{ctx.author.display_name}", inline=False)
+        embed.add_field(name=f"**Server**", value=f"{ctx.guild.name}", inline=False)
+        await member.send(embed=embed)
 
-    await ctx.send(embed=embed)
+
+
+
+        embed = discord.Embed(color=0x000000, title=f"Success", description=f"{member.mention} Has Been Warned!\n ", timestamp=ctx.message.created_at)
+        embed.add_field(name=f"**Warned By**", value=f"{ctx.author.mention}", inline=True)
+        embed.add_field(name=f"**Reason**", value=f"``{content}``", inline=True)
+        embed.set_thumbnail(url=member.avatar_url)
+
+        await ctx.send(embed=embed)
+    except(discord.Forbidden):
+        await ctx.send(f"DM not sent, due to members settings.")
 
 @warn.error
 async def warn_error(ctx, error):
@@ -1124,6 +1168,11 @@ async def iq_error(ctx, error):
 
 @client.command()
 async def hack(ctx, member: discord.Member = None):
+
+    await ctx.send(f"Hacking {member.mention}..", delete_after=5)
+
+
+    await asyncio.sleep(5)
 
 
     passwords=['imnothackedlmao','sendnoodles63','ilovenoodles','icantcode','christianmicraft','server','icantspell','hackedlmao','WOWTONIGHT','69', 'ilovefn123']
@@ -1172,9 +1221,9 @@ async def penis_error(ctx, error):
 
 @client.command()
 async def insta(ctx, username):
-	await ctx.send(f'Gathering Info On {username}', delete_after=2)
+	await ctx.send(f'Searching for **{username}**', delete_after=5)
 
-	await asyncio.sleep(2)
+	await asyncio.sleep(5)
 
 
 
@@ -1192,7 +1241,7 @@ async def insta(ctx, username):
 			private = data['is_private']
 			verified = data['is_verified']
 
-			embed = discord.Embed(color=0x000000, description=f"{ctx.author.mention} Requested Info On ``{username}``", timestamp=ctx.message.created_at)
+			embed = discord.Embed(color=0x000000, title=f"``{username}``", timestamp=ctx.message.created_at)
 			embed.add_field(name='Bio', value=biography + '\u200b', inline=False)
 			embed.add_field(name='Private Status', value=private)
 			embed.add_field(name='Verified Status', value=verified)
@@ -1329,9 +1378,9 @@ async def channelinfo(ctx, channel: discord.TextChannel):
 
 
 @client.command()
-async def geolook(ctx, *, ipaddr: str = '1.3.3.7'):
+async def ip(ctx, *, ipaddr: str = '1.3.3.7'):
 
-    await ctx.send(f'<a:yessir:740086915315007519> |Searching..', delete_after=3)
+    await ctx.send(f'<a:yessir:740086915315007519> |Searching..')
 
     await asyncio.sleep(3)
 
@@ -1415,7 +1464,6 @@ async def guildicon(ctx):
 
 
 
-
 @client.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
@@ -1426,4 +1474,4 @@ async def on_command_error(ctx, error):
 
 
 
-client.run(Token)
+client.run(TOKEN)
